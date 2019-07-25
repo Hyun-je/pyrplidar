@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
       name = "pyrplidar",
-      version = "0.1.0",
+      version = "0.1.1",
       author = "Hyun-je",
       author_email = "bigae2@gmail.com",
       license = "MIT",
@@ -14,7 +14,7 @@ setuptools.setup(
       long_description_content_type = "text/markdown",
       url = "https://github.com/Hyun-je/pyrplidar",
       install_requires = ["pyserial"],
-      packages=["pyrplidar"],
+      packages = setuptools.find_packages(),
       platforms = "Cross Platform",
       classifiers=[
            "Programming Language :: Python :: 3",
