@@ -1,4 +1,4 @@
-# PyRPlidar [![MIT License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Hyun-je/pyrplidar/blob/master/LICENSE)
+# PyRPlidar ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyrplidar) ![PyPI](https://img.shields.io/pypi/v/pyrplidar) [![MIT License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Hyun-je/pyrplidar/blob/master/LICENSE)
 
 ![61845532-a5413e80-aede-11e9-9eee-db8438055619](https://user-images.githubusercontent.com/7419790/61871806-b14bf100-af1c-11e9-94a6-812b4f10930a.png)
 
@@ -17,7 +17,7 @@ $ pip install pyrplidar
 
 ## Example Code
 ```Python
-from rplidar import PyRPlidar
+from pyrplidar import PyRPlidar
 
 lidar = PyRPlidar()
 lidar.connect(port="/dev/cu.SLAB_USBtoUART", baudrate=256000, timeout=3)
