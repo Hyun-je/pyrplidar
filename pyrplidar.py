@@ -63,9 +63,8 @@ class PyRPlidar:
         self.send_command(RPLIDAR_CMD_RESET)
 
     def set_motor_pwm(self, pwm):
-        self.lidar_serial.dtr = False
+        self.lidar_serial.set_dtr(False)
         self.send_command(RPLIDAR_CMD_SET_MOTOR_PWM, struct.pack("<H", pwm))
-        self.lidar_serial.dtr = True
     
     
 

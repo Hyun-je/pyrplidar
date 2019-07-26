@@ -27,3 +27,6 @@ class PyRPlidarSerial:
     
     def receive_data(self, size):
         return self._serial.read(size)
+
+    def set_dtr(self, value):
+        self._serial.dtr = value
