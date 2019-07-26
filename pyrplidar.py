@@ -140,13 +140,10 @@ class PyRPlidar:
 
         if discriptor.data_type == 0x82:
             capsule_type = PyRPlidarScanCapsule
-            capsule_converter = pyrplidar_protocol._capsuleToNormal
         elif discriptor.data_type == 0x84:
             capsule_type = PyRPlidarScanUltraCapsule
-            capsule_converter = pyrplidar_protocol._ultraCapsuleToNormal
         elif discriptor.data_type == 0x85:
             capsule_type = PyRPlidarScanDenseCapsule
-            capsule_converter = pyrplidar_protocol._denseCapsuleToNormal
         else:
             raise PyRPlidarProtocolError("RPlidar Error : scan data type is not supported")
         
@@ -160,7 +157,7 @@ class PyRPlidar:
                 data = self.receive_data(discriptor)
                 capsule_current = capsule_type(data)
                 
-                nodes = capsule_converter(capsule_prev, capsule_current)
+                nodes = capsule_type._parse_capsule(capsule_prev, capsule_current)
                 for index, node in enumerate(nodes):
                      yield PyRPlidarMeasurement(raw_bytes=None, measurement_hq=node)
     

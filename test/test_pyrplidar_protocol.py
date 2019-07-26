@@ -39,7 +39,7 @@ class PyRPlidarProtocolTest(unittest.TestCase):
         scalelvl_output = [0, 1, 1 ,2, 2, 2]
     
         for i in range(len(dist_major_input)):
-            dist_major, scalelvl = pyrplidar_protocol._varbitscale_decode(dist_major_input[i])
+            dist_major, scalelvl = PyRPlidarScanUltraCapsule._varbitscale_decode(dist_major_input[i])
             self.assertEqual(dist_major, dist_major_output[i])
             self.assertEqual(scalelvl, scalelvl_output[i])
     
@@ -61,7 +61,7 @@ class PyRPlidarProtocolTest(unittest.TestCase):
         for i in range(1,5):
             capsule_current = PyRPlidarScanCapsule(data[i])
             
-            nodes = pyrplidar_protocol._capsuleToNormal(capsule_prev, capsule_current)
+            nodes = PyRPlidarScanCapsule._parse_capsule(capsule_prev, capsule_current)
             
             for j in range(len(nodes)):
                 start_flag, quality, angle_z_q14, dist_mm_q2 = nodes_result[i-1][j]
@@ -96,7 +96,7 @@ class PyRPlidarProtocolTest(unittest.TestCase):
             
             capsule_current = PyRPlidarScanUltraCapsule(data[i])
         
-            nodes = pyrplidar_protocol._ultraCapsuleToNormal(capsule_prev, capsule_current)
+            nodes = PyRPlidarScanUltraCapsule._parse_capsule(capsule_prev, capsule_current)
 
             for j in range(len(nodes)):
                 start_flag, quality, angle_z_q14, dist_mm_q2 = nodes_result[i-1][j]

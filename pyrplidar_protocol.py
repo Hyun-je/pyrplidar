@@ -264,52 +264,52 @@ class PyRPlidarScanCapsule:
                                [raw_bytes[i:i+5] for i in range(4, len(raw_bytes), 5)]
                                ))
 
+    @classmethod
+    def _parse_capsule(self, capsule_prev, capsule_current):
+        
+        nodes = []
+        
+        currentStartAngle_q8 = capsule_current.start_angle_q6 << 2
+        prevStartAngle_q8 = capsule_prev.start_angle_q6 << 2
+        
+        diffAngle_q8 = (currentStartAngle_q8)-(prevStartAngle_q8)
+        if prevStartAngle_q8 > currentStartAngle_q8:
+            diffAngle_q8 += (360 << 8)
+        
+        angleInc_q16 = (diffAngle_q8 << 3)
+        currentAngle_raw_q16 = (prevStartAngle_q8 << 8)
 
-def _capsuleToNormal(capsule_prev, capsule_current):
-    
-    nodes = []
-    
-    currentStartAngle_q8 = capsule_current.start_angle_q6 << 2
-    prevStartAngle_q8 = capsule_prev.start_angle_q6 << 2
-    
-    diffAngle_q8 = (currentStartAngle_q8)-(prevStartAngle_q8)
-    if prevStartAngle_q8 > currentStartAngle_q8:
-        diffAngle_q8 += (360 << 8)
-    
-    angleInc_q16 = (diffAngle_q8 << 3)
-    currentAngle_raw_q16 = (prevStartAngle_q8 << 8)
-
-    for pos in range(len(capsule_prev.cabins)):
-        
-        dist_q2 = [0] * 2
-        angle_q6 = [0] * 2
-        syncBit = [0] * 2
-        
-        dist_q2[0] = capsule_prev.cabins[pos].distance1 << 2
-        dist_q2[1] = capsule_prev.cabins[pos].distance2 << 2
-        
-        angle_offset1_q3 = capsule_prev.cabins[pos].d_theta1
-        angle_offset2_q3 = capsule_prev.cabins[pos].d_theta2
-        
-        angle_q6[0] = ((currentAngle_raw_q16 - (angle_offset1_q3<<13))>>10)
-        syncBit[0] = 1 if ((currentAngle_raw_q16 + angleInc_q16) % (360<<16)) < angleInc_q16 else 0
-        currentAngle_raw_q16 += angleInc_q16
-        
-        
-        angle_q6[1] = ((currentAngle_raw_q16 - (angle_offset2_q3<<13))>>10)
-        syncBit[1] = 1 if ((currentAngle_raw_q16 + angleInc_q16) % (360<<16)) < angleInc_q16 else 0
-        currentAngle_raw_q16 += angleInc_q16
-
-        
-        for cpos in range(2):
-
-            if angle_q6[cpos] < 0: angle_q6[cpos] += (360 << 6)
-            if angle_q6[cpos] >= (360 << 6): angle_q6[cpos] -= (360 << 6)
+        for pos in range(len(capsule_prev.cabins)):
             
-            node = PyRPlidarMeasurementHQ(syncBit[cpos], angle_q6[cpos], dist_q2[cpos])
-            nodes.append(node)
+            dist_q2 = [0] * 2
+            angle_q6 = [0] * 2
+            syncBit = [0] * 2
+            
+            dist_q2[0] = capsule_prev.cabins[pos].distance1 << 2
+            dist_q2[1] = capsule_prev.cabins[pos].distance2 << 2
+            
+            angle_offset1_q3 = capsule_prev.cabins[pos].d_theta1
+            angle_offset2_q3 = capsule_prev.cabins[pos].d_theta2
+            
+            angle_q6[0] = ((currentAngle_raw_q16 - (angle_offset1_q3<<13))>>10)
+            syncBit[0] = 1 if ((currentAngle_raw_q16 + angleInc_q16) % (360<<16)) < angleInc_q16 else 0
+            currentAngle_raw_q16 += angleInc_q16
+            
+            
+            angle_q6[1] = ((currentAngle_raw_q16 - (angle_offset2_q3<<13))>>10)
+            syncBit[1] = 1 if ((currentAngle_raw_q16 + angleInc_q16) % (360<<16)) < angleInc_q16 else 0
+            currentAngle_raw_q16 += angleInc_q16
 
-    return nodes
+            
+            for cpos in range(2):
+
+                if angle_q6[cpos] < 0: angle_q6[cpos] += (360 << 6)
+                if angle_q6[cpos] >= (360 << 6): angle_q6[cpos] -= (360 << 6)
+                
+                node = PyRPlidarMeasurementHQ(syncBit[cpos], angle_q6[cpos], dist_q2[cpos])
+                nodes.append(node)
+
+        return nodes
 
 
 
@@ -335,40 +335,40 @@ class PyRPlidarScanDenseCapsule:
                                [raw_bytes[i:i+2] for i in range(4, len(raw_bytes), 2)]
                                ))
 
-
-def _denseCapsuleToNormal(capsule_prev, capsule_current):
-    
-    nodes = []
-    
-    currentStartAngle_q8 = capsule_current.start_angle_q6 << 2
-    prevStartAngle_q8 = capsule_prev.start_angle_q6 << 2
-    
-    diffAngle_q8 = (currentStartAngle_q8)-(prevStartAngle_q8)
-    if prevStartAngle_q8 > currentStartAngle_q8:
-        diffAngle_q8 += (360 << 8)
-    
-    angleInc_q16 = (diffAngle_q8 << 8) // 40
-    currentAngle_raw_q16 = (prevStartAngle_q8 << 8)
-
-    for pos in range(len(capsule_prev.cabins)):
+    @classmethod
+    def _parse_capsule(self, capsule_prev, capsule_current):
         
-        dist_q2 = 0
-        angle_q6 = 0
-        syncBit = 0
-
-        syncBit = 1 if (((currentAngle_raw_q16 + angleInc_q16) % (360 << 16)) < angleInc_q16) else 0
+        nodes = []
         
-        angle_q6 = (currentAngle_raw_q16 >> 10)
-        if angle_q6 < 0: angle_q6 += (360 << 6)
-        if angle_q6 >= (360 << 6): angle_q6 -= (360 << 6)
-        currentAngle_raw_q16 += angleInc_q16
+        currentStartAngle_q8 = capsule_current.start_angle_q6 << 2
+        prevStartAngle_q8 = capsule_prev.start_angle_q6 << 2
         
-        dist_q2 = capsule_prev.cabins[pos].distance << 2
+        diffAngle_q8 = (currentStartAngle_q8)-(prevStartAngle_q8)
+        if prevStartAngle_q8 > currentStartAngle_q8:
+            diffAngle_q8 += (360 << 8)
+        
+        angleInc_q16 = (diffAngle_q8 << 8) // 40
+        currentAngle_raw_q16 = (prevStartAngle_q8 << 8)
 
-        node = PyRPlidarMeasurementHQ(syncBit, angle_q6, dist_q2)
-        nodes.append(node)
+        for pos in range(len(capsule_prev.cabins)):
+            
+            dist_q2 = 0
+            angle_q6 = 0
+            syncBit = 0
 
-    return nodes
+            syncBit = 1 if (((currentAngle_raw_q16 + angleInc_q16) % (360 << 16)) < angleInc_q16) else 0
+            
+            angle_q6 = (currentAngle_raw_q16 >> 10)
+            if angle_q6 < 0: angle_q6 += (360 << 6)
+            if angle_q6 >= (360 << 6): angle_q6 -= (360 << 6)
+            currentAngle_raw_q16 += angleInc_q16
+            
+            dist_q2 = capsule_prev.cabins[pos].distance << 2
+
+            node = PyRPlidarMeasurementHQ(syncBit, angle_q6, dist_q2)
+            nodes.append(node)
+
+        return nodes
 
 
 
@@ -418,104 +418,104 @@ class PyRPlidarScanUltraCapsule:
         }
         return str(data)
 
-
-def _varbitscale_decode(scaled):
-    
-    scaleLevel = 0
-    
-    for i in range(len(VBS_SCALED_BASE)):
+    @classmethod
+    def _varbitscale_decode(self, scaled):
         
-        remain = scaled - VBS_SCALED_BASE[i]
-        if remain >= 0:
-            scaleLevel = VBS_SCALED_LVL[i]
-            return (VBS_TARGET_BASE[i] + (remain << scaleLevel), scaleLevel)
-    
-    return (0, scaleLevel)
-
-
-def _ultraCapsuleToNormal(capsule_prev, capsule_current):
-    
-    nodes = []
-    
-    currentStartAngle_q8 = capsule_current.start_angle_q6 << 2
-    prevStartAngle_q8 = capsule_prev.start_angle_q6 << 2
+        scaleLevel = 0
         
-    diffAngle_q8 = (currentStartAngle_q8)-(prevStartAngle_q8)
-    if prevStartAngle_q8 > currentStartAngle_q8:
-        diffAngle_q8 += (360 << 8)
-
-    angleInc_q16 = (diffAngle_q8 << 3) // 3
-    currentAngle_raw_q16 = (prevStartAngle_q8 << 8)
-    
-    for pos in range(len(capsule_prev.ultra_cabins)):
-        
-        dist_q2 = [0] * 3
-        angle_q6 = [0] * 3
-        syncBit = [0] * 3
-        
-        dist_major = capsule_prev.ultra_cabins[pos].major
-        
-        # signed partical integer, using the magic shift here
-        # DO NOT TOUCH
-        
-        dist_predict1 = capsule_prev.ultra_cabins[pos].predict1
-        dist_predict2 = capsule_prev.ultra_cabins[pos].predict2
-        
-        dist_major2 = 0
-        
-        # prefetch next ...
-        if pos == len(capsule_prev.ultra_cabins) - 1:
-            dist_major2 = capsule_current.ultra_cabins[0].major
-        else:
-            dist_major2 = capsule_prev.ultra_cabins[pos + 1].major
-        
-        
-        # decode with the var bit scale ...
-        dist_major, scalelvl1 = _varbitscale_decode(dist_major)
-        dist_major2, scalelvl2 = _varbitscale_decode(dist_major2)
-        
-        
-        dist_base1 = dist_major
-        dist_base2 = dist_major2
-        
-        if not(dist_major) and dist_major2:
-            dist_base1 = dist_major2
-            scalelvl1 = scalelvl2
-        
-        dist_q2[0] = (dist_major << 2)
-        if (dist_predict1 == 0xFFFFFE00) or (dist_predict1 == 0x1FF):
-            dist_q2[1] = 0
-        else:
-            dist_predict1 = (dist_predict1 << scalelvl1)
-            dist_q2[1] = ((dist_predict1 + dist_base1) << 2) & 0xFFFFFFFF
-        
-        if (dist_predict2 == 0xFFFFFE00) or (dist_predict2 == 0x1FF):
-            dist_q2[2] = 0
-        else:
-            dist_predict2 = (dist_predict2 << scalelvl2)
-            dist_q2[2] = ((dist_predict2 + dist_base2) << 2) & 0xFFFFFFFF
-    
-    
-        for cpos in range(3):
+        for i in range(len(VBS_SCALED_BASE)):
             
-            syncBit[cpos] = 1 if (((currentAngle_raw_q16 + angleInc_q16) % (360 << 16)) < angleInc_q16) else 0
+            remain = scaled - VBS_SCALED_BASE[i]
+            if remain >= 0:
+                scaleLevel = VBS_SCALED_LVL[i]
+                return (VBS_TARGET_BASE[i] + (remain << scaleLevel), scaleLevel)
+        
+        return (0, scaleLevel)
+
+    @classmethod
+    def _parse_capsule(self, capsule_prev, capsule_current):
+        
+        nodes = []
+        
+        currentStartAngle_q8 = capsule_current.start_angle_q6 << 2
+        prevStartAngle_q8 = capsule_prev.start_angle_q6 << 2
+        
+        diffAngle_q8 = (currentStartAngle_q8)-(prevStartAngle_q8)
+        if prevStartAngle_q8 > currentStartAngle_q8:
+            diffAngle_q8 += (360 << 8)
+
+        angleInc_q16 = (diffAngle_q8 << 3) // 3
+        currentAngle_raw_q16 = (prevStartAngle_q8 << 8)
+        
+        for pos in range(len(capsule_prev.ultra_cabins)):
             
-            offsetAngleMean_q16 = int(7.5 * 3.1415926535 * (1 << 16) / 180.0)
+            dist_q2 = [0] * 3
+            angle_q6 = [0] * 3
+            syncBit = [0] * 3
             
-            if dist_q2[cpos] >= (50 * 4):
+            dist_major = capsule_prev.ultra_cabins[pos].major
+            
+            # signed partical integer, using the magic shift here
+            # DO NOT TOUCH
+            
+            dist_predict1 = capsule_prev.ultra_cabins[pos].predict1
+            dist_predict2 = capsule_prev.ultra_cabins[pos].predict2
+            
+            dist_major2 = 0
+            
+            # prefetch next ...
+            if pos == len(capsule_prev.ultra_cabins) - 1:
+                dist_major2 = capsule_current.ultra_cabins[0].major
+            else:
+                dist_major2 = capsule_prev.ultra_cabins[pos + 1].major
+            
+            
+            # decode with the var bit scale ...
+            dist_major, scalelvl1 = PyRPlidarScanUltraCapsule._varbitscale_decode(dist_major)
+            dist_major2, scalelvl2 = PyRPlidarScanUltraCapsule._varbitscale_decode(dist_major2)
+            
+            
+            dist_base1 = dist_major
+            dist_base2 = dist_major2
+            
+            if not(dist_major) and dist_major2:
+                dist_base1 = dist_major2
+                scalelvl1 = scalelvl2
+            
+            dist_q2[0] = (dist_major << 2)
+            if (dist_predict1 == 0xFFFFFE00) or (dist_predict1 == 0x1FF):
+                dist_q2[1] = 0
+            else:
+                dist_predict1 = (dist_predict1 << scalelvl1)
+                dist_q2[1] = ((dist_predict1 + dist_base1) << 2) & 0xFFFFFFFF
+            
+            if (dist_predict2 == 0xFFFFFE00) or (dist_predict2 == 0x1FF):
+                dist_q2[2] = 0
+            else:
+                dist_predict2 = (dist_predict2 << scalelvl2)
+                dist_q2[2] = ((dist_predict2 + dist_base2) << 2) & 0xFFFFFFFF
+        
+        
+            for cpos in range(3):
                 
-                k1 = 98361
-                k2 = int(k1 / dist_q2[cpos])
+                syncBit[cpos] = 1 if (((currentAngle_raw_q16 + angleInc_q16) % (360 << 16)) < angleInc_q16) else 0
                 
-                offsetAngleMean_q16 = int(8 * 3.1415926535 * (1 << 16) / 180) - int(k2 << 6) - int((k2 * k2 * k2) / 98304)
-            
-            angle_q6[cpos] = (currentAngle_raw_q16 - int(offsetAngleMean_q16 * 180 / 3.14159265)) >> 10
-            currentAngle_raw_q16 += angleInc_q16
-            
-            if angle_q6[cpos] < 0: angle_q6[cpos] += (360 << 6)
-            if angle_q6[cpos] >= (360 << 6): angle_q6[cpos] -= (360 << 6)
-            
-            node = PyRPlidarMeasurementHQ(syncBit[cpos], angle_q6[cpos], dist_q2[cpos])
-            nodes.append(node)
+                offsetAngleMean_q16 = int(7.5 * 3.1415926535 * (1 << 16) / 180.0)
+                
+                if dist_q2[cpos] >= (50 * 4):
+                    
+                    k1 = 98361
+                    k2 = int(k1 / dist_q2[cpos])
+                    
+                    offsetAngleMean_q16 = int(8 * 3.1415926535 * (1 << 16) / 180) - int(k2 << 6) - int((k2 * k2 * k2) / 98304)
+                
+                angle_q6[cpos] = (currentAngle_raw_q16 - int(offsetAngleMean_q16 * 180 / 3.14159265)) >> 10
+                currentAngle_raw_q16 += angleInc_q16
+                
+                if angle_q6[cpos] < 0: angle_q6[cpos] += (360 << 6)
+                if angle_q6[cpos] >= (360 << 6): angle_q6[cpos] -= (360 << 6)
+                
+                node = PyRPlidarMeasurementHQ(syncBit[cpos], angle_q6[cpos], dist_q2[cpos])
+                nodes.append(node)
 
-    return nodes
+        return nodes
