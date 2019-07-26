@@ -20,7 +20,10 @@ $ pip install pyrplidar
 from pyrplidar import PyRPlidar
 
 lidar = PyRPlidar()
-lidar.connect(port="/dev/cu.SLAB_USBtoUART", baudrate=256000, timeout=3)
+lidar.connect(port="/dev/ttyUSB0", baudrate=256000, timeout=3)
+# Linux   : "/dev/ttyUSB0"
+# MacOS   : "/dev/cu.SLAB_USBtoUART"
+# Windows : "COM5"
 
 
 info = lidar.get_info()
