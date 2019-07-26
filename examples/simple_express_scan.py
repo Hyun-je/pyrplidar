@@ -4,9 +4,10 @@ import time
 def simple_express_scan():
 
     lidar = PyRPlidar()
-    lidar.connect(port="/dev/cu.SLAB_USBtoUART",
-                  baudrate=256000,
-                  timeout=5)
+    lidar.connect(port="/dev/ttyUSB0", baudrate=256000, timeout=3)
+    # Linux   : "/dev/ttyUSB0"
+    # MacOS   : "/dev/cu.SLAB_USBtoUART"
+    # Windows : "COM5"
 
                   
     lidar.set_motor_pwm(500)
