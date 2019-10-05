@@ -10,6 +10,9 @@
 * Simple code & Easy to use
 * Use generator pattern (for performance)
 
+![ezgif-5-3c5261a0b7fa](https://user-images.githubusercontent.com/7419790/66256236-b94ec980-e7c6-11e9-921e-c5098fce58b1.gif)
+
+
 ## Installation
 ```sh
 $ pip install pyrplidar
